@@ -62,6 +62,19 @@ class FPALUS_rr<bits<7> funct7, bits<3> funct3, string opcodestr>
     : RVInstR<funct7, funct3, OPC_OP_FP, (outs FPR32:$rd),
               (ins FPR32:$rs1, FPR32:$rs2), opcodestr, "$rd, $rs1, $rs2">;
 
+// --- Clarinet New Instruction (compute format) ---
+let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
+class PPALUS_rr_frm<bits<7> funct7, string opcodestr>
+    : RVInstRFrm<funct7, OPC_OP_FP, (outs PPR:$rd),
+                 (ins PPR:$rs1, PPR:$rs2, frmarg:$funct3), opcodestr,
+                  "$rd, $rs1, $rs2, $funct3">;
+
+class PPALUSDynFrmAlias<PPALUS_rr_frm Inst, string OpcodeStr>
+    : InstAlias<OpcodeStr#" $rd, $rs1, $rs2",
+                (Inst PPR:$rd, PPR:$rs1, PPR:$rs2, 0b111)>;
+
+// --- Clarinet New Instruction (compute format) ---
+
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class FPALUS_rr_frm<bits<7> funct7, string opcodestr>
     : RVInstRFrm<funct7, OPC_OP_FP, (outs FPR32:$rd),
@@ -116,6 +129,25 @@ def FSW : RVInstS<0b010, OPC_STORE_FP, (outs),
                    "fsw", "$rs2, ${imm12}(${rs1})">,
           Sched<[WriteFST32, ReadStoreData, ReadFMemBase]>;
 
+// --- Clarinet New Instruction (load-store) ---
+let Predicates = [HasStdExtF] in {
+let hasSideEffects = 0, mayLoad = 1, mayStore = 0 in
+def PLW : RVInstI<0b010, OPC_LOAD_P, (outs PPR:$rd),
+                  (ins GPR:$rs1, simm12:$imm12),
+                   "plw", "$rd, ${imm12}(${rs1})">,
+          Sched<[WriteFLD32, ReadFMemBase]>;
+
+// Operands for stores are in the order srcreg, base, offset rather than
+// reflecting the order these fields are specified in the instruction
+// encoding.
+let hasSideEffects = 0, mayLoad = 0, mayStore = 1 in
+def PSW : RVInstS<0b010, OPC_STORE_P, (outs),
+                  (ins PPR:$rs2, GPR:$rs1, simm12:$imm12),
+                   "fsw", "$rs2, ${imm12}(${rs1})">,
+          Sched<[WriteFST32, ReadStoreData, ReadFMemBase]>;
+
+// --- Clarinet New Instruction (load-store) ---
+
 def FMADD_S  : FPFMAS_rrr_frm<OPC_MADD, "fmadd.s">,
                Sched<[WriteFMulAdd32, ReadFMulAdd32, ReadFMulAdd32, ReadFMulAdd32]>;
 def          : FPFMASDynFrmAlias<FMADD_S, "fmadd.s">;
@@ -128,6 +160,21 @@ def          : FPFMASDynFrmAlias<FNMSUB_S, "fnmsub.s">;
 def FNMADD_S : FPFMAS_rrr_frm<OPC_NMADD, "fnmadd.s">,
                Sched<[WriteFMulAdd32, ReadFMulAdd32, ReadFMulAdd32, ReadFMulAdd32]>;
 def          : FPFMASDynFrmAlias<FNMADD_S, "fnmadd.s">;
+
+// --- Clarinet New Instruction (compute) ---
+def FMA_P  : PPALUS_rr_frm<0b0110010, "fma.p">,
+             Sched<[WriteFALU32, ReadFALU32, ReadFALU32]>;
+def        : PPALUSDynFrmAlias<FMA_P, "fma.p">;
+def FMS_P  : PPALUS_rr_frm<0b0110110, "fms.p">,
+             Sched<[WriteFALU32, ReadFALU32, ReadFALU32]>;
+def        : PPALUSDynFrmAlias<FMS_P, "fms.p">;
+def FDA_P  : PPALUS_rr_frm<0b0111010, "fda.p">,
+             Sched<[WriteFALU32, ReadFALU32, ReadFALU32]>;
+def        : PPALUSDynFrmAlias<FDA_P, "fda.p">;
+def FDS_P  : PPALUS_rr_frm<0b0111110, "fds.p">,
+             Sched<[WriteFALU32, ReadFALU32, ReadFALU32]>;
+def        : PPALUSDynFrmAlias<FDS_P, "fds.p">;
+// --- Clarinet New Instruction (compute) ---
 
 def FADD_S : FPALUS_rr_frm<0b0000000, "fadd.s">,
              Sched<[WriteFALU32, ReadFALU32, ReadFALU32]>;
@@ -158,6 +205,29 @@ def FMIN_S   : FPALUS_rr<0b0010100, 0b000, "fmin.s">,
                Sched<[WriteFMinMax32, ReadFMinMax32, ReadFMinMax32]>;
 def FMAX_S   : FPALUS_rr<0b0010100, 0b001, "fmax.s">,
                Sched<[WriteFMinMax32, ReadFMinMax32, ReadFMinMax32]>;
+
+// --- Clarinet New Instruction (convert) ---
+def FCVT_P_S : FPUnaryOp_r_frm<0b0100110, PPR, FPR32, "fcvt.p.s">,
+               Sched<[WriteFCvtF32ToI32, ReadFCvtF32ToI32]> {
+  let rs2 = 0b00000;
+}
+def          : FPUnaryOpDynFrmAlias<FCVT_P_S, "fcvt.p.s", PPR, FPR32>;
+def FCVT_S_P : FPUnaryOp_r_frm<0b0100100, FPR32, PPR, "fcvt.s.p">,
+               Sched<[WriteFCvtF32ToI32, ReadFCvtF32ToI32]> {
+  let rs2 = 0b10000;
+}
+def          : FPUnaryOpDynFrmAlias<FCVT_S_P, "fcvt.s.p", FPR32, PPR>;
+def FCVT_P_R : FPUnaryOp_r_frm<0b0101010, PPR, PPR, "fcvt.p.r">,
+               Sched<[WriteFCvtF32ToI32, ReadFCvtF32ToI32]> {
+  let rs2 = 0b10001;
+}
+def          : FPUnaryOpDynFrmAlias<FCVT_P_R, "fcvt.p.r", PPR, PPR>;
+def FCVT_R_P : FPUnaryOp_r_frm<0b0101010, PPR, PPR, "fcvt.r.p">,
+               Sched<[WriteFCvtF32ToI32, ReadFCvtF32ToI32]> {
+  let rs2 = 0b10000;
+}
+def          : FPUnaryOpDynFrmAlias<FCVT_R_P, "fcvt.r.p", PPR, PPR>;
+// --- Clarinet New Instruction (convert) ---
 
 def FCVT_W_S : FPUnaryOp_r_frm<0b1100000, GPR, FPR32, "fcvt.w.s">,
                Sched<[WriteFCvtF32ToI32, ReadFCvtF32ToI32]> {
