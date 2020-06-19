@@ -233,3 +233,57 @@ def FPR64C : RegisterClass<"RISCV", [f64], 64, (add
   (sequence "F%u_D", 10, 15),
   (sequence "F%u_D", 8, 9)
 )>;
+
+// --- Clarinet New Instruction (PPR) ---
+// Posit Registers
+let RegAltNameIndices = [ABIRegAltName] in {
+  def P0_P  : RISCVReg32<0, "p0", ["pt0"]>, DwarfRegNum<[64]>;
+  def P1_P  : RISCVReg32<1, "p1", ["pt1"]>, DwarfRegNum<[65]>;
+  def P2_P  : RISCVReg32<2, "p2", ["pt2"]>, DwarfRegNum<[66]>;
+  def P3_P  : RISCVReg32<3, "p3", ["pt3"]>, DwarfRegNum<[67]>;
+  def P4_P  : RISCVReg32<4, "p4", ["pt4"]>, DwarfRegNum<[68]>;
+  def P5_P  : RISCVReg32<5, "p5", ["pt5"]>, DwarfRegNum<[69]>;
+  def P6_P  : RISCVReg32<6, "p6", ["pt6"]>, DwarfRegNum<[70]>;
+  def P7_P  : RISCVReg32<7, "p7", ["pt7"]>, DwarfRegNum<[71]>;
+  def P8_P  : RISCVReg32<8, "p8", ["ps0"]>, DwarfRegNum<[72]>;
+  def P9_P  : RISCVReg32<9, "p9", ["ps1"]>, DwarfRegNum<[73]>;
+  def P10_P : RISCVReg32<10,"p10", ["pa0"]>, DwarfRegNum<[74]>;
+  def P11_P : RISCVReg32<11,"p11", ["pa1"]>, DwarfRegNum<[75]>;
+  def P12_P : RISCVReg32<12,"p12", ["pa2"]>, DwarfRegNum<[76]>;
+  def P13_P : RISCVReg32<13,"p13", ["pa3"]>, DwarfRegNum<[77]>;
+  def P14_P : RISCVReg32<14,"p14", ["pa4"]>, DwarfRegNum<[78]>;
+  def P15_P : RISCVReg32<15,"p15", ["pa5"]>, DwarfRegNum<[79]>;
+  def P16_P : RISCVReg32<16,"p16", ["pa6"]>, DwarfRegNum<[80]>;
+  def P17_P : RISCVReg32<17,"p17", ["pa7"]>, DwarfRegNum<[81]>;
+  def P18_P : RISCVReg32<18,"p18", ["ps2"]>, DwarfRegNum<[82]>;
+  def P19_P : RISCVReg32<19,"p19", ["ps3"]>, DwarfRegNum<[83]>;
+  def P20_P : RISCVReg32<20,"p20", ["ps4"]>, DwarfRegNum<[84]>;
+  def P21_P : RISCVReg32<21,"p21", ["ps5"]>, DwarfRegNum<[85]>;
+  def P22_P : RISCVReg32<22,"p22", ["ps6"]>, DwarfRegNum<[86]>;
+  def P23_P : RISCVReg32<23,"p23", ["ps7"]>, DwarfRegNum<[87]>;
+  def P24_P : RISCVReg32<24,"p24", ["ps8"]>, DwarfRegNum<[88]>;
+  def P25_P : RISCVReg32<25,"p25", ["ps9"]>, DwarfRegNum<[89]>;
+  def P26_P : RISCVReg32<26,"p26", ["ps10"]>, DwarfRegNum<[90]>;
+  def P27_P : RISCVReg32<27,"p27", ["ps11"]>, DwarfRegNum<[91]>;
+  def P28_P : RISCVReg32<28,"p28", ["pt8"]>, DwarfRegNum<[92]>;
+  def P29_P : RISCVReg32<29,"p29", ["pt9"]>, DwarfRegNum<[93]>;
+  def P30_P : RISCVReg32<30,"p30", ["pt10"]>, DwarfRegNum<[94]>;
+  def P31_P : RISCVReg32<31,"p31", ["pt11"]>, DwarfRegNum<[95]>;
+}
+
+// The order of registers represents the preferred allocation sequence,
+// meaning caller-save regs are listed before callee-save.
+def PPR : RegisterClass<"RISCV", [p32], 32, (add
+    (sequence "P%u_P", 0, 7),
+    (sequence "P%u_P", 10, 17),
+    (sequence "P%u_P", 28, 31),
+    (sequence "P%u_P", 8, 9),
+    (sequence "P%u_P", 18, 27)
+)>;
+
+def PPRC : RegisterClass<"RISCV", [p32], 32, (add
+  (sequence "P%u_P", 10, 15),
+  (sequence "P%u_P", 8, 9)
+)>;
+// --- Clarinet New Instruction (PPR) ---
+
