@@ -62,6 +62,12 @@ def OPC_AUIPC     : RISCVOpcode<0b0010111>;
 def OPC_OP_IMM_32 : RISCVOpcode<0b0011011>;
 def OPC_STORE     : RISCVOpcode<0b0100011>;
 def OPC_STORE_FP  : RISCVOpcode<0b0100111>;
+
+// --- Clarinet New Instruction (load-store) ---
+def OPC_LOAD_P    : RISCVOpcode<0b0001011>;
+def OPC_STORE_P   : RISCVOpcode<0b0101011>;
+// --- Clarinet New Instruction (load-store) ---
+
 def OPC_AMO       : RISCVOpcode<0b0101111>;
 def OPC_OP        : RISCVOpcode<0b0110011>;
 def OPC_LUI       : RISCVOpcode<0b0110111>;
